@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import org.json.JSONArray;
@@ -28,34 +29,52 @@ import java.util.ArrayList;
 public class HomeFragment extends Fragment {
     private final String TAG = HomeFragment.class.getSimpleName();
     private MovieTilesAdapter movieTilesAdapter;
+    private ArrayList<Movie> movieArrayList;
 
     public HomeFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState == null || !savedInstanceState.containsKey(Constants.SAVED_INST_KEY_FRAG)) {
+            movieArrayList = new ArrayList<Movie>();
+            new FetchMoviesTask().execute();
+        } else {
+            movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_FRAG);
+        }
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        movieTilesAdapter = new MovieTilesAdapter(getActivity(), new ArrayList<Movie>());
+        movieTilesAdapter = new MovieTilesAdapter(getActivity(), movieArrayList);
         GridView gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
         gridView.setColumnWidth(Constants.POSTER_WIDTH);
         gridView.setAdapter(movieTilesAdapter);
-//        ListView listView = (ListView) rootView.findViewById(R.id.listview_tiles);
-//        listView.setAdapter(movieTilesAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Movie selectedMovie = movieTilesAdapter.getItem(position);
+
+            }
+        });
         return rootView;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-//        Log.i(TAG, "onstart called");
-        new FetchMoviesTask().execute();
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(Constants.SAVED_INST_KEY_FRAG,movieArrayList);
+        super.onSaveInstanceState(outState);
     }
 
-    public class FetchMoviesTask extends AsyncTask<Void, Void, Movie[]> {
+    public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
         private final String TAG = FetchMoviesTask.class.getSimpleName();
 
-        protected Movie[] doInBackground(Void... params) {
+        protected ArrayList<Movie> doInBackground(Void... params) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -122,9 +141,10 @@ public class HomeFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(Movie[] movies) {
+        protected void onPostExecute(ArrayList<Movie> movies) {
             if(movies != null){
                 movieTilesAdapter.clear();
+                movieArrayList = movies;
                 for (Movie movie: movies){
                     movieTilesAdapter.add(movie);
                 }
@@ -132,17 +152,17 @@ public class HomeFragment extends Fragment {
         }
 
 
-        private Movie[] getPopularMoviesFromJson(String popularJsonStr) throws JSONException {
+        private ArrayList<Movie> getPopularMoviesFromJson(String popularJsonStr) throws JSONException {
 
             final String RESULTS = "results";
             JSONObject receivedJson = new JSONObject(popularJsonStr);
             JSONArray receivedMoviesArray = receivedJson.getJSONArray(RESULTS);
 
-            Movie[] movies = new Movie[receivedMoviesArray.length()];
+            ArrayList<Movie> movies = new ArrayList<Movie>();
 
             for(int i = 0; i < receivedMoviesArray.length(); i++ ){
                 JSONObject movieJson = receivedMoviesArray.getJSONObject(i);
-                movies[i] = new Movie(movieJson);
+                movies.add(i, new Movie(movieJson));
             }
 
             return movies;

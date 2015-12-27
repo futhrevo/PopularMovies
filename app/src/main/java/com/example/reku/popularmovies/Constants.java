@@ -17,6 +17,6 @@ public final class Constants {
     public static final int BACKDROP_WIDTH = 300;
     public static final String DEFAULT_POSTER_WIDTH = "w" + POSTER_WIDTH;
     public static final String DEFAULT_BACKDROP_WIDTH = "w" + BACKDROP_WIDTH;
-
+    public static final String SAVED_INST_KEY_FRAG = "movies";
 
 }

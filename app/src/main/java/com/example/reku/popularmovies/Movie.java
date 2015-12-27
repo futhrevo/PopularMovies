@@ -1,6 +1,8 @@
 package com.example.reku.popularmovies;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,7 +11,7 @@ import org.json.JSONObject;
 /**
  * Created by rakeshkalyankar on 25/12/15.
  */
-public class Movie {
+public class Movie implements Parcelable{
     String poster_path;
     Boolean adult;
     String overview;
@@ -30,6 +32,18 @@ public class Movie {
         this.original_title = json.getString("original_title");
         this.backdrop_path = json.getString("backdrop_path");
         this.vote_average = json.getDouble("vote_average");
+    }
+
+    public Movie(Parcel in) {
+        poster_path = in.readString();
+        adult = in.readByte() != 0;
+        overview = in.readString();
+        release_date = in.readString();
+        genre_ids = in.createIntArray();
+        id = in.readString();
+        original_title = in.readString();
+        backdrop_path = in.readString();
+        vote_average = in.readDouble();
     }
 
     private int[] formatGenre(JSONArray genreArray){
@@ -65,6 +79,36 @@ public class Movie {
         return getBackdrop_path(Constants.DEFAULT_BACKDROP_WIDTH);
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(poster_path);
+        dest.writeByte((byte) (adult ? 1 : 0));
+        dest.writeString(overview);
+        dest.writeString(release_date);
+        dest.writeIntArray(genre_ids);
+        dest.writeString(id);
+        dest.writeString(original_title);
+        dest.writeString(backdrop_path);
+        dest.writeDouble(vote_average);
+    }
+
+    public final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>(){
+
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }
 
 
