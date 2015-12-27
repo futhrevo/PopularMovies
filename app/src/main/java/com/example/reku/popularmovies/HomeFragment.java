@@ -1,8 +1,10 @@
 package com.example.reku.popularmovies;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +32,7 @@ public class HomeFragment extends Fragment {
     private final String TAG = HomeFragment.class.getSimpleName();
     private MovieTilesAdapter movieTilesAdapter;
     private ArrayList<Movie> movieArrayList;
+    private Integer state ;
 
     public HomeFragment() {
     }
@@ -37,19 +40,38 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState == null || !savedInstanceState.containsKey(Constants.SAVED_INST_KEY_FRAG)) {
-            movieArrayList = new ArrayList<Movie>();
-            new FetchMoviesTask().execute();
-        } else {
-            movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_FRAG);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        int sortBy = Integer.parseInt(settings.getString(getString(R.string.pref_sort_list_key),"1"));
+        // if savedInstanceState is null, perform full fetch
+        // else savedInstanceState contained key not equal to sort by, perform full fetch
+        //else use from savedInstanceState
+        if (savedInstanceState != null ) {
+            if(sortBy == 0){
+                if(savedInstanceState.containsKey(Constants.SAVED_INST_KEY_UR_FRAG)){
+                    movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_UR_FRAG);
+                    state = sortBy;
+                    Log.i(TAG,"Using user rated movies from saved instance");
+                    return;
+                }
+            }else{
+                if(savedInstanceState.containsKey(Constants.SAVED_INST_KEY_MP_FRAG)){
+                    movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_MP_FRAG);
+                    state = sortBy;
+                    Log.i(TAG,"Using popular movies from saved instance");
+                    return;
+                }
+            }
         }
-
+        movieArrayList = new ArrayList<Movie>();
+        state = null;
+        Log.i(TAG,"Clean slate");
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(TAG, "on createview");
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         movieTilesAdapter = new MovieTilesAdapter(getActivity(), movieArrayList);
         GridView gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
@@ -64,17 +86,41 @@ public class HomeFragment extends Fragment {
         });
         return rootView;
     }
+    private  void updateTiles(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        int sortBy = Integer.parseInt(settings.getString(getString(R.string.pref_sort_list_key),"1"));
+        if(state == null ||state != sortBy){
+            state = sortBy;
+            new FetchMoviesTask().execute(sortBy);
+        }
+
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i(TAG,"on start");
+        updateTiles();
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(Constants.SAVED_INST_KEY_FRAG,movieArrayList);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        int sortBy = Integer.parseInt(settings.getString(getString(R.string.pref_sort_list_key), "1"));
+        if(sortBy == 0){
+            outState.putParcelableArrayList(Constants.SAVED_INST_KEY_UR_FRAG,movieArrayList);
+        }else{
+            outState.putParcelableArrayList(Constants.SAVED_INST_KEY_MP_FRAG,movieArrayList);
+        }
         super.onSaveInstanceState(outState);
     }
 
-    public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
+    public class FetchMoviesTask extends AsyncTask<Integer, Void, ArrayList<Movie>> {
         private final String TAG = FetchMoviesTask.class.getSimpleName();
 
-        protected ArrayList<Movie> doInBackground(Void... params) {
+        protected ArrayList<Movie> doInBackground(Integer... params) {
+            if(params.length == 0){
+                return null;
+            }
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -86,10 +132,10 @@ public class HomeFragment extends Fragment {
                 final String APIKEY = getResources().getString(R.string.TMDbAPIKEY);
 
                 Uri uri = Uri.parse(Constants.API_BASE_URL).buildUpon()
-                        .appendQueryParameter("sort_by", "popularity.desc")
+                        .appendQueryParameter("sort_by", Constants.getSortStringPath(params[0]))
                         .appendQueryParameter("api_key", APIKEY)
                         .build();
-//                Log.i(TAG, uri.toString());
+                Log.i(TAG, uri.toString());
                 URL url = new URL(uri.toString());
                 // Create the request to TMDb, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
