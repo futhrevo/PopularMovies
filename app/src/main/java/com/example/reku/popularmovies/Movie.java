@@ -79,6 +79,10 @@ public class Movie implements Parcelable{
         return getBackdrop_path(Constants.DEFAULT_BACKDROP_WIDTH);
     }
 
+    public String getYear(){
+        String str[] = this.release_date.split("-");
+        return str[0];
+    }
     @Override
     public int describeContents() {
         return 0;
@@ -97,7 +101,7 @@ public class Movie implements Parcelable{
         dest.writeDouble(vote_average);
     }
 
-    public final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>(){
+    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>(){
 
         @Override
         public Movie createFromParcel(Parcel source) {

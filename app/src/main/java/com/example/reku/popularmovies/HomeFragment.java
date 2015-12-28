@@ -1,5 +1,6 @@
 package com.example.reku.popularmovies;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -81,6 +82,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Movie selectedMovie = movieTilesAdapter.getItem(position);
+                Intent detailIntent  = new Intent(getActivity(),DetailActivity.class);
+                detailIntent.putExtra(Constants.SELECTED_MOVIE_INTENT,selectedMovie);
+                startActivity(detailIntent);
 
             }
         });
