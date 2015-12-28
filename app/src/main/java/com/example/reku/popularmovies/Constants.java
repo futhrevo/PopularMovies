@@ -13,6 +13,7 @@ public final class Constants {
 
     public static final String IMG_BASE_URL = "http://image.tmdb.org/t/p/";
     public static final String API_BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
+    public static final String META_BASE_URL = "http://api.themoviedb.org/3/movie/";
     public static final int POSTER_WIDTH = 500;
     public static final int BACKDROP_WIDTH = 780;
     public static final String DEFAULT_POSTER_WIDTH = "w" + POSTER_WIDTH;

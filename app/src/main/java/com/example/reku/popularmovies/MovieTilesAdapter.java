@@ -39,7 +39,7 @@ public class MovieTilesAdapter extends ArrayAdapter<Movie>{
         }
 
         ImageView posterView = (ImageView) convertView.findViewById(R.id.list_item_thumb);
-        Picasso.with(getContext()).load(movie.getPoster_path()).into(posterView);
+        Picasso.with(getContext()).load(movie.getPoster_path()).placeholder(R.mipmap.ic_launcher).into(posterView);
 
         return convertView;
     }

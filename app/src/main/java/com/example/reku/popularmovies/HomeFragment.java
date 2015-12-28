@@ -51,28 +51,28 @@ public class HomeFragment extends Fragment {
                 if(savedInstanceState.containsKey(Constants.SAVED_INST_KEY_UR_FRAG)){
                     movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_UR_FRAG);
                     state = sortBy;
-                    Log.i(TAG,"Using user rated movies from saved instance");
+//                    Log.i(TAG,"Using user rated movies from saved instance");
                     return;
                 }
             }else{
                 if(savedInstanceState.containsKey(Constants.SAVED_INST_KEY_MP_FRAG)){
                     movieArrayList = savedInstanceState.getParcelableArrayList(Constants.SAVED_INST_KEY_MP_FRAG);
                     state = sortBy;
-                    Log.i(TAG,"Using popular movies from saved instance");
+//                    Log.i(TAG,"Using popular movies from saved instance");
                     return;
                 }
             }
         }
-        movieArrayList = new ArrayList<Movie>();
+        movieArrayList = new ArrayList<>();
         state = null;
-        Log.i(TAG,"Clean slate");
+//        Log.i(TAG,"Clean slate");
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.i(TAG, "on createview");
+//        Log.i(TAG, "on createview");
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         movieTilesAdapter = new MovieTilesAdapter(getActivity(), movieArrayList);
         GridView gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
@@ -102,7 +102,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Log.i(TAG,"on start");
+//        Log.i(TAG,"on start");
         updateTiles();
     }
 
@@ -139,7 +139,7 @@ public class HomeFragment extends Fragment {
                         .appendQueryParameter("sort_by", Constants.getSortStringPath(params[0]))
                         .appendQueryParameter("api_key", APIKEY)
                         .build();
-                Log.i(TAG, uri.toString());
+//                Log.i(TAG, uri.toString());
                 URL url = new URL(uri.toString());
                 // Create the request to TMDb, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -203,12 +203,14 @@ public class HomeFragment extends Fragment {
 
 
         private ArrayList<Movie> getPopularMoviesFromJson(String popularJsonStr) throws JSONException {
-
+            if(popularJsonStr == null){
+                return null;
+            }
             final String RESULTS = "results";
             JSONObject receivedJson = new JSONObject(popularJsonStr);
             JSONArray receivedMoviesArray = receivedJson.getJSONArray(RESULTS);
 
-            ArrayList<Movie> movies = new ArrayList<Movie>();
+            ArrayList<Movie> movies = new ArrayList<>();
 
             for(int i = 0; i < receivedMoviesArray.length(); i++ ){
                 JSONObject movieJson = receivedMoviesArray.getJSONObject(i);

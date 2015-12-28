@@ -1,84 +1,139 @@
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.reku.popularmovies.DetailActivityFragment"
-    android:shrinkColumns="*"
-    android:stretchColumns="*">
+    android:layout_height="wrap_content"
+    tools:context="com.example.reku.popularmovies.DetailActivityFragment">
 
-
-    <TableRow
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimaryDark">
+        android:fillViewport="true"
+        android:id="@+id/scrollView">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Large Text"
-            android:id="@+id/textView_original_title"
-            android:textSize="@dimen/abc_text_size_large_material"
-            android:textColor="@android:color/background_light"
-            android:layout_margin="16dp"
-            android:textAlignment="center" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:background="@color/button_material_light">
 
-    </TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/textView_original_title"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:textSize="@dimen/abc_text_size_headline_material"
+                android:padding="@dimen/movie_detail_padding"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="@android:color/background_light"
+                android:textIsSelectable="false"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="5">
+            <ImageView
+                android:layout_width="200dp"
+                android:layout_height="300dp"
+                android:id="@+id/imageView_poster_detail"
+                android:layout_below="@+id/textView_original_title"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_margin="@dimen/movie_detail_padding" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageView_poster_detail" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:text="Large Text"
+                android:id="@+id/textView_release_year"
+                android:layout_alignTop="@+id/imageView_poster_detail"
+                android:layout_toRightOf="@+id/imageView_poster_detail"
+                android:layout_toEndOf="@+id/imageView_poster_detail"
+                android:padding="@dimen/movie_detail_padding" />
 
-        <TableLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView_runtime"
+                android:layout_below="@+id/textView_release_year"
+                android:layout_toRightOf="@+id/imageView_poster_detail"
+                android:layout_toEndOf="@+id/imageView_poster_detail"
+                android:text="--min"
+                android:padding="@dimen/movie_detail_padding"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:text="Large Text"
+                android:id="@+id/textView_vote_average"
+                android:layout_below="@+id/textView_runtime"
+                android:layout_toRightOf="@+id/imageView_poster_detail"
+                android:layout_toEndOf="@+id/imageView_poster_detail"
+                android:padding="@dimen/movie_detail_padding" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Large Text"
-                    android:id="@+id/textView_release_year"
-                    android:padding="10dp"
-                    android:maxWidth="150dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/textView_overview"
+                android:layout_below="@+id/imageView_poster_detail"
+                android:layout_alignLeft="@+id/imageView_poster_detail"
+                android:layout_alignStart="@+id/imageView_poster_detail"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                android:padding="@dimen/movie_detail_padding" />
 
-            </TableRow>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add as Favourite"
+                android:id="@+id/button"
+                android:layout_below="@+id/textView_vote_average"
+                android:layout_toRightOf="@+id/imageView_poster_detail"
+                android:layout_toEndOf="@+id/imageView_poster_detail"
+                android:padding="@dimen/movie_detail_padding"
+                android:layout_margin="@dimen/movie_detail_padding"
+                android:background="@color/colorAccent"
+                android:textColor="@color/background_floating_material_light" />
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+        </RelativeLayout>
+    </ScrollView>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Medium Text"
-                    android:id="@+id/textView_vote_average"
-                    android:layout_gravity="left"
-                    android:padding="10dp" />
-            </TableRow>
+</RelativeLayout>
 
-        </TableLayout>
+<!--<TextView-->
+<!--android:layout_width="fill_parent"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+<!--android:text="Medium Text"-->
+<!--android:id="@+id/textView_overview"-->
+<!--android:padding="20dp"-->
+<!--android:autoText="false" />-->
 
-    </TableRow>
+<!--<TextView-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+<!--android:text="Large Text"-->
+<!--android:id="@+id/textView_release_year"-->
+<!--android:padding="10dp"-->
+<!--android:maxWidth="150dp" />-->
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/textView_overview"
-        android:padding="20dp"
-        android:autoText="false" />
+<!--<TextView-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+<!--android:text="Medium Text"-->
+<!--android:id="@+id/textView_vote_average"-->
+<!--android:layout_gravity="left"-->
+<!--android:padding="10dp" />-->
 
-</TableLayout>
+<!--<ImageView-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:id="@+id/imageView_poster_detail" />-->
