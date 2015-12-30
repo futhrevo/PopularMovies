@@ -23,11 +23,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DetailActivityFragment extends Fragment {
-
+    @Bind(R.id.textView_original_title) TextView textView_original_title;
+    @Bind(R.id.imageView_poster_detail) ImageView imageView_poster_detail;
+    @Bind(R.id.textView_release_year) TextView textView_release_year;
+    @Bind(R.id.textView_vote_average) TextView textView_vote_average;
+    @Bind(R.id.textView_overview) TextView textView_overview;
+    @Bind(R.id.textView_runtime) TextView textView_runtime;
     public DetailActivityFragment() {
     }
 
@@ -36,24 +44,17 @@ public class DetailActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         getActivity().setTitle("Hello");
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+        ButterKnife.bind(this, rootView);
         Intent intent = getActivity().getIntent();
         if(intent != null && intent.hasExtra(Constants.SELECTED_MOVIE_INTENT)){
             Movie movie = intent.getParcelableExtra(Constants.SELECTED_MOVIE_INTENT);
             getActivity().setTitle(movie.original_title);
-            TextView t = (TextView) rootView.findViewById(R.id.textView_original_title);
-            t.setText(movie.original_title);
 
-            ImageView v = (ImageView) rootView.findViewById(R.id.imageView_poster_detail);
-            Picasso.with(getContext()).load(movie.getPoster_path()).into(v);
-
-            t = (TextView) rootView.findViewById(R.id.textView_release_year);
-            t.setText(movie.getYear());
-
-            t = (TextView) rootView.findViewById(R.id.textView_vote_average);
-            t.setText(movie.vote_average.toString() + "/10");
-
-            t = (TextView) rootView.findViewById(R.id.textView_overview);
-            t.setText(movie.overview);
+            textView_original_title.setText(movie.original_title);
+            Picasso.with(getContext()).load(movie.getPoster_path()).into(imageView_poster_detail);
+            textView_release_year.setText(movie.getYear());
+            textView_vote_average.setText(movie.vote_average.toString() + "/10");
+            textView_overview.setText(movie.overview);
 
             // fetch meta data from async task
             new FetchMovieMetaTask().execute(movie.id);
@@ -124,10 +125,10 @@ public class DetailActivityFragment extends Fragment {
                 try {
                     JSONObject metaJson = new JSONObject(s);
                     String runtime = metaJson.getString("runtime");
-                    TextView t = (TextView) getActivity().findViewById(R.id.textView_runtime);
+
                     // if view is destroyed before network operation is done
-                    if(t != null){
-                        t.setText(runtime + "min");
+                    if(textView_runtime != null){
+                        textView_runtime.setText(runtime + "min");
                     }
 
                 } catch (JSONException e) {
