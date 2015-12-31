@@ -22,8 +22,8 @@ public final class Constants {
     public static final String SAVED_INST_KEY_UR_FRAG = "moviesUserRating";
     public static final String SELECTED_MOVIE_INTENT = "selectedMovieIntent";
 
-    public static String getSortStringPath(Integer type){
-        if(type == 0)
+    public static String getSortStringPath(String type){
+        if(type == "0")
             return "vote_average.desc";
         else{
             return "popularity.desc";

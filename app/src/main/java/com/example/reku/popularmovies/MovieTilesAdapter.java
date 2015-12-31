@@ -34,12 +34,12 @@ public class MovieTilesAdapter extends ArrayAdapter<Movie>{
         // If this is a new View object we're getting, then inflate the layout.
         // If not, this view already has the layout inflated from a previous call to getView,
         // and we modify the View widgets as usual.
-        if (convertView == null){
+        if (convertView == null ){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_poster,parent,false);
         }
 
         ImageView posterView = (ImageView) convertView.findViewById(R.id.list_item_thumb);
-        Picasso.with(getContext()).load(movie.getPoster_path()).placeholder(R.mipmap.ic_launcher).into(posterView);
+        Picasso.with(getContext()).load(movie.getPoster_path()).placeholder(R.mipmap.ic_launcher).error(R.drawable.ic_cloud_off_black_36px).into(posterView);
 
         return convertView;
     }
