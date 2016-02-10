@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -19,12 +20,14 @@ import butterknife.ButterKnife;
  * A placeholder fragment containing a simple view.
  */
 public class DetailActivityFragment extends Fragment {
-    @Bind(R.id.textView_original_title) TextView textView_original_title;
+//    @Bind(R.id.textView_original_title) TextView textView_original_title;
     @Bind(R.id.imageView_poster_detail) ImageView imageView_poster_detail;
     @Bind(R.id.textView_release_year) TextView textView_release_year;
     @Bind(R.id.textView_vote_average) TextView textView_vote_average;
     @Bind(R.id.textView_overview) TextView textView_overview;
     @Bind(R.id.textView_runtime) TextView textView_runtime;
+    @Bind(R.id.listView_trailers) ListView listView_trailers;
+    @Bind(R.id.listView_reviews) ListView listView_reviews;
     public DetailActivityFragment() {
     }
 
@@ -39,7 +42,7 @@ public class DetailActivityFragment extends Fragment {
             Movie movie = intent.getParcelableExtra(Constants.SELECTED_MOVIE_INTENT);
             getActivity().setTitle(movie.original_title);
 
-            textView_original_title.setText(movie.original_title);
+//            textView_original_title.setText(movie.original_title);
             Picasso.with(getContext()).load(movie.getPoster_path()).into(imageView_poster_detail);
             textView_release_year.setText(movie.getYear());
             textView_vote_average.setText(movie.vote_average.toString() + "/10");
@@ -47,6 +50,12 @@ public class DetailActivityFragment extends Fragment {
 
             // fetch meta data from async task
             new TmdbApiTask(getActivity(),textView_runtime).execute(movie.id);
+
+            //fetch trailer list
+            new TmdbApiTask(getActivity(), listView_trailers, Constants.FETCH_VIDEOS).execute(movie.id);
+
+            //fetch reviews list
+            new TmdbApiTask(getActivity(), listView_reviews, Constants.FETCH_REVIEWS).execute(movie.id);
         }
         return rootView;
     }
