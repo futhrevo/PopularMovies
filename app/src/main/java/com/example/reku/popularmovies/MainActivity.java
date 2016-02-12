@@ -10,13 +10,21 @@ import android.view.MenuItem;
 import com.facebook.stetho.Stetho;
 
 public class MainActivity extends AppCompatActivity {
+    private int mLastPreference;
+    private final String HOMEFRAGMENT_TAG = "HMTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLastPreference = Utility.getPrefSelected(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new HomeFragment(), HOMEFRAGMENT_TAG)
+                    .commit();
+        }
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
                         .enableDumpapp(
@@ -50,4 +58,18 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        int pref = Utility.getPrefSelected(this);
+        if(pref != mLastPreference){
+            HomeFragment hm = (HomeFragment) getSupportFragmentManager().findFragmentByTag(HOMEFRAGMENT_TAG);
+            if(hm != null){
+                hm.onPreferenceChanged();
+            }
+            mLastPreference = pref;
+        }
+    }
+
 }

@@ -99,7 +99,7 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
             }
         }else{
             return Uri.parse(Constants.API_BASE_URL).buildUpon()
-                    .appendQueryParameter("sort_by", Constants.getSortStringPath(param))
+                    .appendQueryParameter("sort_by", Utility.getSortStringPath(param))
                     .appendQueryParameter("api_key", APIKEY)
                     .build();
         }

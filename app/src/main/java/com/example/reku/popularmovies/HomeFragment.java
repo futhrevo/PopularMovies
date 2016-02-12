@@ -24,7 +24,7 @@ import java.util.ArrayList;
  */
 public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private final String TAG = HomeFragment.class.getSimpleName();
-//    private MovieTilesAdapter movieTilesAdapter;
+
     private MoviesCursorAdaptor moviesCursorAdaptor;
     private ArrayList<Movie> movieArrayList;
     private Integer state ;
@@ -66,10 +66,10 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        Log.i(TAG, "on createview");
+
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         moviesCursorAdaptor = new MoviesCursorAdaptor(getActivity(), null, 0, CURSOR_LOADER_ID);
-//        movieTilesAdapter = new MovieTilesAdapter(getActivity(), movieArrayList);
+
         GridView gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
         gridView.setColumnWidth(Constants.POSTER_WIDTH);
         gridView.setAdapter(moviesCursorAdaptor);
@@ -102,7 +102,7 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         if(state == null ||state != sortBy){
             state = sortBy;
 //            new FetchMoviesTask().execute(sortBy);
-            new TmdbApiTask(getActivity(),movieArrayList).execute(String.valueOf(sortBy));
+//            new TmdbApiTask(getActivity(),movieArrayList).execute(String.valueOf(sortBy));
         }
 
     }
@@ -110,13 +110,17 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onStart() {
         super.onStart();
 //        Log.i(TAG,"on start");
-//        updateTiles();
+        updateTiles();
+    }
+
+    void onPreferenceChanged(){
+        getLoaderManager().restartLoader(CURSOR_LOADER_ID,null,this);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        int sortBy = Integer.parseInt(settings.getString(getString(R.string.pref_sort_list_key), "1"));
+
+        int sortBy = Utility.getPrefSelected(getActivity());
         if(sortBy == 0){
             outState.putParcelableArrayList(Constants.SAVED_INST_KEY_UR_FRAG,movieArrayList);
         }else{
@@ -127,7 +131,25 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), MovieContract.MovieEntry.CONTENT_URI, null,null,null,null);
+        //Read preferences for obtaining sort order and favorites
+
+        int sortBy = Utility.getPrefSelected(getActivity());
+        String sortOrder;
+        String selection = null;
+        switch (sortBy){
+            case Constants.PREF_HIGH_RATED:
+                sortOrder = MovieContract.MovieEntry.COLUMN_USER_RATING + " DESC";
+                break;
+            case Constants.PREF_FAVORITE:
+                selection = MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry.COLUMN_FAVORITE + " = 1 ";
+            case Constants.PREF_MOST_POPULAR:
+                sortOrder = MovieContract.MovieEntry.COLUMN_RELEASE_DATE + " DESC";
+                break;
+            default:
+                sortOrder = null;
+
+        }
+        return new CursorLoader(getActivity(), MovieContract.MovieEntry.CONTENT_URI, null,selection,null,sortOrder);
     }
 
     @Override

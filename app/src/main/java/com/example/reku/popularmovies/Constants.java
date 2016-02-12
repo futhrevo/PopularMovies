@@ -27,11 +27,8 @@ public final class Constants {
     public static final int FETCH_REVIEWS = 3;
 
     public static final String MOVIE_SHARE_HASHTAG = "#PopularMovies";
-    public static String getSortStringPath(String type){
-        if(type == "0")
-            return "vote_average.desc";
-        else{
-            return "popularity.desc";
-        }
-    }
+
+    public static final int PREF_HIGH_RATED = 0;
+    public static final int PREF_MOST_POPULAR = 1;
+    public static final int PREF_FAVORITE = 2;
 }
