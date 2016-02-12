@@ -1,12 +1,13 @@
 package com.example.reku.popularmovies;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.example.reku.popularmovies.data.MovieContract;
-
+import com.example.reku.popularmovies.data.MovieContract.MovieEntry;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +25,7 @@ public class Movie implements Parcelable{
     String original_title;
     String backdrop_path;
     Double vote_average;
+    Boolean favorite = false;
 
     public Movie(JSONObject json) throws JSONException {
             this.poster_path = json.getString("poster_path");
@@ -89,6 +91,18 @@ public class Movie implements Parcelable{
     public String getYear(){
         String str[] = this.release_date.split("-");
         return str[0];
+    }
+
+    public ContentValues packToContentValues(){
+        ContentValues movieValues = new ContentValues();
+        movieValues.put(MovieEntry.COLUMN_TITLE, original_title);
+        movieValues.put(MovieEntry.COLUMN_SYNOPSIS, overview);
+        movieValues.put(MovieEntry.COLUMN_USER_RATING, vote_average);
+        movieValues.put(MovieEntry.COLUMN_RELEASE_DATE, getYear());
+        movieValues.put(MovieEntry.COLUMN_FAVORITE, false);
+        movieValues.put(MovieEntry.COLUMN_POSTER, poster_path);
+        movieValues.put(MovieEntry._ID, id);
+        return movieValues;
     }
     @Override
     public int describeContents() {

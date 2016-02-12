@@ -1,13 +1,16 @@
 package com.example.reku.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.View;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.example.reku.popularmovies.data.MovieContract;
 import com.linearlistview.LinearListView;
 
 import org.json.JSONArray;
@@ -22,14 +25,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * Created by rakeshkalyankar on 31/12/15.
  */
 public class TmdbApiTask extends AsyncTask<String, Void, String> {
+    private static final String TAG = TmdbApiTask.class.getSimpleName();
     private Context context;
     private TextView textView_runtime;
-    private MovieTilesAdapter movieTilesAdapter;
     private ArrayList<Movie> movieArrayList;
     private Boolean isMetaRequired;
     private int type;
@@ -44,7 +48,6 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
     public TmdbApiTask(Context context, TextView runtime){
         this.context = context;
         this.textView_runtime = runtime;
-        this.movieTilesAdapter = null;
         this.movieArrayList = null;
         this.isMetaRequired = true;
         this.type = Constants.FETCH_METAINFO;
@@ -53,18 +56,16 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
 
 
     //constructor to fetch movies list
-    public TmdbApiTask(Context context, ArrayList<Movie> movieArrayList, MovieTilesAdapter movieTilesAdapter){
+    public TmdbApiTask(Context context, ArrayList<Movie> movieArrayList){
         this.context = context;
         this.textView_runtime = null;
         this.movieArrayList = movieArrayList;
-        this.movieTilesAdapter = movieTilesAdapter;
         this.isMetaRequired = false;
     }
 
     public TmdbApiTask(Context context, LinearListView linearListView, int type) {
         this.context = context;
         this.textView_runtime = null;
-        this.movieTilesAdapter = null;
         this.movieArrayList = null;
         this.isMetaRequired = true;
         this.type = type;
@@ -157,7 +158,17 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                 }
             }
         }
-        return movieJsonstr;
+        if(isMetaRequired){
+            return movieJsonstr;
+        }else{
+            try {
+                storeMoviesFromJson(movieJsonstr);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
     }
 
     @Override
@@ -233,26 +244,13 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                         break;
                 }
 
-            }else {
-                try {
-                    ArrayList<Movie> movies = getPopularMoviesFromJson(s);
-                    if(movies != null){
-                        movieTilesAdapter.clear();
-                        movieArrayList = movies;
-                        for (Movie movie: movies){
-                            movieTilesAdapter.add(movie);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
 
-    private ArrayList<Movie> getPopularMoviesFromJson(String popularJsonStr) throws JSONException {
+    private void storeMoviesFromJson(String popularJsonStr) throws JSONException {
         if(popularJsonStr == null){
-            return null;
+            return ;
         }
         final String RESULTS = "results";
         JSONObject receivedJson = new JSONObject(popularJsonStr);
@@ -260,11 +258,22 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
 
         ArrayList<Movie> movies = new ArrayList<>();
 
+        // Insert the new weather information into the database
+        Vector<ContentValues> cVVector = new Vector<>(receivedMoviesArray.length());
+
         for(int i = 0; i < receivedMoviesArray.length(); i++ ){
             JSONObject movieJson = receivedMoviesArray.getJSONObject(i);
-            movies.add(i, new Movie(movieJson));
+//            movies.add(i, new Movie(movieJson));
+            cVVector.add(new Movie(movieJson).packToContentValues());
+        }
+        int inserted = 0;
+        //add to database
+        if ( cVVector.size() > 0 ) {
+            ContentValues[] cvArray = new ContentValues[cVVector.size()];
+            cVVector.toArray(cvArray);
+            inserted = context.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
         }
 
-        return movies;
+        Log.d(TAG, "FetchWeatherTask Complete. " + inserted + " Inserted");
     }
 }

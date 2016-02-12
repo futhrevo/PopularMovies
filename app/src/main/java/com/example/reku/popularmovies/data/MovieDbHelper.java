@@ -13,7 +13,7 @@ import com.example.reku.popularmovies.data.MovieContract.MovieEntry;
 public class MovieDbHelper extends SQLiteOpenHelper {
     private static final String TAG = MovieDbHelper.class.getSimpleName();
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     static final String DATABASE_NAME = "movies.db";
 
     public MovieDbHelper(Context context) {
@@ -23,13 +23,13 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String SQl_CREATE_MOVIES_TABLE = "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
-                MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                MovieEntry._ID + " INTEGER PRIMARY KEY , " +
                 MovieEntry.COLUMN_TITLE +  " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_POSTER + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_SYNOPSIS + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_USER_RATING + " REAL NOT NULL, " +
-                MovieEntry.COLUMN_FAVORITE + "BOOLEAN DEFAULT FALSE, "+
+                MovieEntry.COLUMN_FAVORITE + " BOOLEAN DEFAULT FALSE, "+
 
                 " UNIQUE (" + MovieEntry.COLUMN_TITLE + ", " + MovieEntry.COLUMN_RELEASE_DATE + ") ON CONFLICT REPLACE);" ;
         Log.i(TAG, SQl_CREATE_MOVIES_TABLE);
