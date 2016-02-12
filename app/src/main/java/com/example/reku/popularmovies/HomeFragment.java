@@ -1,7 +1,10 @@
 package com.example.reku.popularmovies;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -16,12 +19,12 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private final String TAG = HomeFragment.class.getSimpleName();
     private MovieTilesAdapter movieTilesAdapter;
     private ArrayList<Movie> movieArrayList;
     private Integer state ;
-
+    private static final int CURSOR_LOADER_ID = 0;
     public HomeFragment() {
     }
 
@@ -106,4 +109,18 @@ public class HomeFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 }

@@ -1,10 +1,12 @@
 package com.example.reku.popularmovies;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by rakeshkalyankar on 26/12/15.
@@ -30,6 +32,7 @@ public final class Constants {
     public static final int FETCH_VIDEOS = 2;
     public static final int FETCH_REVIEWS = 3;
 
+    public static final String MOVIE_SHARE_HASHTAG = "#PopularMovies";
     public static String getSortStringPath(String type){
         if(type == "0")
             return "vote_average.desc";
@@ -38,27 +41,26 @@ public final class Constants {
         }
     }
 
-    /**** Method for Setting the Height of the ListView dynamically.
-     **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView  ****/
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapter listAdapter = listView.getAdapter();
-        if (listAdapter == null)
-            return;
+    public static byte[] drawableToByteArray(Drawable d) {
 
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-        int totalHeight = 0;
-        View view = null;
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            view = listAdapter.getView(i, view, listView);
-            if (i == 0)
-                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (d != null) {
+            Bitmap imageBitmap = ((BitmapDrawable) d).getBitmap();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] byteData = baos.toByteArray();
 
-            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-            totalHeight += view.getMeasuredHeight();
-        }
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        listView.setLayoutParams(params);
+            return byteData;
+        } else
+            return null;
+
+    }
+
+
+    public static Drawable byteToDrawable(byte[] data) {
+
+        if (data == null)
+            return null;
+        else
+            return new BitmapDrawable(BitmapFactory.decodeByteArray(data, 0, data.length));
     }
 }

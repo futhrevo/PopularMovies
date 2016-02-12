@@ -1,8 +1,11 @@
 package com.example.reku.popularmovies;
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.example.reku.popularmovies.data.MovieContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,6 +37,10 @@ public class Movie implements Parcelable{
         this.vote_average = json.getDouble("vote_average");
     }
 
+    public Movie(Cursor cursor){
+        int posterIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER);
+        this.poster_path = cursor.getString(posterIndex);
+    }
     public Movie(Parcel in) {
         poster_path = in.readString();
         adult = in.readByte() != 0;

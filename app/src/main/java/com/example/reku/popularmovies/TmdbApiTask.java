@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.linearlistview.LinearListView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,12 +29,17 @@ import java.util.HashMap;
 public class TmdbApiTask extends AsyncTask<String, Void, String> {
     private Context context;
     private TextView textView_runtime;
-    private ListView listView_extra;
     private MovieTilesAdapter movieTilesAdapter;
     private ArrayList<Movie> movieArrayList;
     private Boolean isMetaRequired;
     private int type;
+    private LinearListView linearListView;
 
+    public interface AsyncResponse{
+        void processFinish(String result);
+    }
+
+    public AsyncResponse delegate = null;
     // constructor to fetch movie run length
     public TmdbApiTask(Context context, TextView runtime){
         this.context = context;
@@ -43,18 +48,9 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
         this.movieArrayList = null;
         this.isMetaRequired = true;
         this.type = Constants.FETCH_METAINFO;
+
     }
 
-    //constructor to fetch movie trailers and reviews contained as list
-    public TmdbApiTask(Context context, ListView listView, int type){
-        this.context = context;
-        this.textView_runtime = null;
-        this.movieTilesAdapter = null;
-        this.movieArrayList = null;
-        this.isMetaRequired = true;
-        this.type = type;
-        this.listView_extra = listView;
-    }
 
     //constructor to fetch movies list
     public TmdbApiTask(Context context, ArrayList<Movie> movieArrayList, MovieTilesAdapter movieTilesAdapter){
@@ -65,6 +61,20 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
         this.isMetaRequired = false;
     }
 
+    public TmdbApiTask(Context context, LinearListView linearListView, int type) {
+        this.context = context;
+        this.textView_runtime = null;
+        this.movieTilesAdapter = null;
+        this.movieArrayList = null;
+        this.isMetaRequired = true;
+        this.type = type;
+        this.linearListView = linearListView;
+    }
+
+    public TmdbApiTask(Context context, LinearListView linearListView, int type, AsyncResponse delegate) {
+        this(context, linearListView, type);
+        this.delegate = delegate;
+    }
     private Uri buildUri(String param){
         final String APIKEY = context.getResources().getString(R.string.TMDbAPIKEY);
         if(isMetaRequired){
@@ -183,21 +193,19 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                                 trailer.put("key", key);
                                 trailers.add(trailer);
                             }
-
+                            delegate.processFinish(trailers.get(0).get("key"));
                             SimpleAdapter listAdapter = new SimpleAdapter(context, trailers, R.layout.list_item_trailer,
                                     new String[]{"name", "key"},
                                     new int[]{R.id.textView_listitem_trailer_title, R.id.textView_trailer_key} );
-                            listView_extra.setAdapter(listAdapter);
-                            Constants.setListViewHeightBasedOnChildren(listView_extra);
-                            listView_extra.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            linearListView.setAdapter(listAdapter);
+                            linearListView.setOnItemClickListener(new LinearListView.OnItemClickListener() {
                                 @Override
-                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                public void onItemClick(LinearListView parent, View view, int position, long id) {
                                     String selected = ((TextView) view.findViewById(R.id.textView_trailer_key)).getText().toString();
                                     Intent youtubeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v="+selected));
                                     context.startActivity(youtubeIntent);
                                 }
                             });
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -207,6 +215,7 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                             JSONObject metaJson = new JSONObject(s);
                             JSONArray results = metaJson.getJSONArray("results");
                            ArrayList<HashMap<String , String>> reviews = new ArrayList<>();
+                            delegate.processFinish(null);
                             for (int i = 0; i < results.length(); i++) {
                                 HashMap<String, String> review = new HashMap<>();
                                 JSONObject obj =  results.getJSONObject(i);
@@ -217,8 +226,7 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                                 reviews.add(review);
                             }
                             SimpleAdapter adapter = new SimpleAdapter(context,reviews, R.layout.list_item_review, new String[]{"author", "content"}, new int[]{R.id.textView_author, R.id.textView_review});
-                            listView_extra.setAdapter(adapter);
-                            Constants.setListViewHeightBasedOnChildren(listView_extra);
+                            linearListView.setAdapter(adapter);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
