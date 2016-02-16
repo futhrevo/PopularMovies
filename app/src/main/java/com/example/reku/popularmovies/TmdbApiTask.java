@@ -34,7 +34,6 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
     private static final String TAG = TmdbApiTask.class.getSimpleName();
     private Context context;
     private TextView textView_runtime;
-    private ArrayList<Movie> movieArrayList;
     private Boolean isMetaRequired;
     private int type;
     private LinearListView linearListView;
@@ -48,7 +47,6 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
     public TmdbApiTask(Context context, TextView runtime){
         this.context = context;
         this.textView_runtime = runtime;
-        this.movieArrayList = null;
         this.isMetaRequired = true;
         this.type = Constants.FETCH_METAINFO;
 
@@ -56,17 +54,15 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
 
 
     //constructor to fetch movies list
-    public TmdbApiTask(Context context, ArrayList<Movie> movieArrayList){
+    public TmdbApiTask(Context context){
         this.context = context;
         this.textView_runtime = null;
-        this.movieArrayList = movieArrayList;
         this.isMetaRequired = false;
     }
 
     public TmdbApiTask(Context context, LinearListView linearListView, int type) {
         this.context = context;
         this.textView_runtime = null;
-        this.movieArrayList = null;
         this.isMetaRequired = true;
         this.type = type;
         this.linearListView = linearListView;
@@ -204,7 +200,12 @@ public class TmdbApiTask extends AsyncTask<String, Void, String> {
                                 trailer.put("key", key);
                                 trailers.add(trailer);
                             }
-                            delegate.processFinish(trailers.get(0).get("key"));
+                            if(trailers.size() > 0){
+                                delegate.processFinish(trailers.get(0).get("key"));
+                            } else{
+                                delegate.processFinish(null);
+                            }
+
                             SimpleAdapter listAdapter = new SimpleAdapter(context, trailers, R.layout.list_item_trailer,
                                     new String[]{"name", "key"},
                                     new int[]{R.id.textView_listitem_trailer_title, R.id.textView_trailer_key} );

@@ -54,7 +54,7 @@ public class MovieProvider extends ContentProvider{
                         selectionArgs,
                         null,null,
                         sortOrder);
-                return retCursor;
+                break;
             case MOVIE_WITH_ID:
                 retCursor = mOpenHelper.getReadableDatabase().query(MovieContract.MovieEntry.TABLE_NAME,
                         projection,
@@ -62,11 +62,16 @@ public class MovieProvider extends ContentProvider{
                         new String[] {String.valueOf(ContentUris.parseId(uri))},
                         null,null,
                         sortOrder);
-                return retCursor;
+                break;
             default:{
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
             }
         }
+        if(retCursor != null){
+            retCursor.setNotificationUri(getContext().getContentResolver(),uri);
+            return retCursor;
+        }
+        return null;
     }
 
     @Nullable
@@ -161,13 +166,16 @@ public class MovieProvider extends ContentProvider{
         int numDeleted;
         switch (sUriMatcher.match(uri)){
             case MOVIES:
-                numDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, selection,selectionArgs);
+                numDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, MovieContract.MovieEntry.COLUMN_FAVORITE + " = 0",selectionArgs);
                 break;
             case MOVIE_WITH_ID:
                 numDeleted = db .delete(MovieContract.MovieEntry.TABLE_NAME, MovieContract.MovieEntry._ID + " = ?",new String[]{String.valueOf(ContentUris.parseId(uri))}) ;
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: "+ uri);
+        }
+        if(numDeleted > 0){
+            getContext().getContentResolver().notifyChange(uri,null);
         }
         return numDeleted;
     }

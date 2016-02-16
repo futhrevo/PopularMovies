@@ -1,13 +1,21 @@
 package com.example.reku.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.reku.popularmovies.data.MovieContract;
 import com.facebook.stetho.Stetho;
+
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private int mLastPreference;
@@ -21,10 +29,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(savedInstanceState == null){
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new HomeFragment(), HOMEFRAGMENT_TAG)
-                    .commit();
+            pushFragments(new HomeFragment(), false, HOMEFRAGMENT_TAG);
         }
+        updateTiles();
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
                         .enableDumpapp(
@@ -55,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -72,4 +78,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void pushFragments(Fragment fragment, boolean shouldAdd, String tag) {
+        FragmentManager manager = getSupportFragmentManager();//Use this line for FragmentManager , if you are in Activity
+        //FragmentManager manager = getActivity().getSupportFragmentManager();//Use this line for FragmentManager , if you are in Fragment
+        FragmentTransaction ft = manager.beginTransaction();
+
+        manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);//Uncomment this line if you don't want to maintain Fragment Backsack
+        ft.replace(R.id.content_main, fragment, tag);
+        if (shouldAdd) {
+            ft.addToBackStack(tag); //add fragment in backstack
+        }
+        ft.commit();
+    }
+
+    private  void updateTiles(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        long bestBefore = settings.getLong(Constants.VALID_TILL, 0L);
+
+        if(new Date().after(new Date(bestBefore))){
+            getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
+            new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_HIGH_RATED));
+            new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_MOST_POPULAR));
+            // refresh data every day
+            settings.edit().putLong(Constants.VALID_TILL, new Date().getTime() + 86400000L).apply();
+
+        } else{
+            return;
+        }
+    }
 }

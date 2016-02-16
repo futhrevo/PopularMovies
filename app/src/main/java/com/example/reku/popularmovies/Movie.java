@@ -42,6 +42,21 @@ public class Movie implements Parcelable{
     public Movie(Cursor cursor){
         int posterIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER);
         this.poster_path = cursor.getString(posterIndex);
+
+        int overviewIndex = cursor.getColumnIndex(MovieEntry.COLUMN_SYNOPSIS);
+        this.overview = cursor.getString(overviewIndex);
+
+        int dateIndex = cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE);
+        this.release_date = cursor.getString(dateIndex);
+
+        int titleIndex = cursor.getColumnIndex(MovieEntry.COLUMN_TITLE);
+        this.original_title = cursor.getString(titleIndex);
+
+        int ratingIndex = cursor.getColumnIndex(MovieEntry.COLUMN_USER_RATING);
+        this.vote_average = cursor.getDouble(ratingIndex);
+
+        int favoriteIndex = cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE);
+        this.favorite = cursor.getInt(favoriteIndex) > 0;
     }
     public Movie(Parcel in) {
         poster_path = in.readString();
@@ -69,8 +84,7 @@ public class Movie implements Parcelable{
     }
 
     private Uri getPoster_path(String size){
-        String path = Constants.IMG_BASE_URL + size + this.poster_path;
-        return Uri.parse(path);
+        return Utility.getPoster_path(size, this.poster_path);
 
     }
 
@@ -89,16 +103,14 @@ public class Movie implements Parcelable{
     }
 
     public String getYear(){
-        String str[] = this.release_date.split("-");
-        return str[0];
+        return Utility.getYear(this.release_date);
     }
-
     public ContentValues packToContentValues(){
         ContentValues movieValues = new ContentValues();
         movieValues.put(MovieEntry.COLUMN_TITLE, original_title);
         movieValues.put(MovieEntry.COLUMN_SYNOPSIS, overview);
         movieValues.put(MovieEntry.COLUMN_USER_RATING, vote_average);
-        movieValues.put(MovieEntry.COLUMN_RELEASE_DATE, getYear());
+        movieValues.put(MovieEntry.COLUMN_RELEASE_DATE, release_date);
         movieValues.put(MovieEntry.COLUMN_FAVORITE, false);
         movieValues.put(MovieEntry.COLUMN_POSTER, poster_path);
         movieValues.put(MovieEntry._ID, id);
@@ -112,13 +124,13 @@ public class Movie implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(poster_path);
-        dest.writeByte((byte) (adult ? 1 : 0));
+//        dest.writeByte((byte) (adult ? 1 : 0));
         dest.writeString(overview);
         dest.writeString(release_date);
-        dest.writeIntArray(genre_ids);
+//        dest.writeIntArray(genre_ids);
         dest.writeString(id);
         dest.writeString(original_title);
-        dest.writeString(backdrop_path);
+//        dest.writeString(backdrop_path);
         dest.writeDouble(vote_average);
     }
 
