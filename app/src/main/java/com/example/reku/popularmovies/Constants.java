@@ -33,4 +33,5 @@ public final class Constants {
     public static final int PREF_FAVORITE = 2;
 
     public static final String DETAILFRAG_KEY = "mUri";
+    public static final String DETAILFRAGMENT_TAG = "DFTAG";
 }

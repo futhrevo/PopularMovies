@@ -185,10 +185,8 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         if (mPosition != GridView.INVALID_POSITION){
             gridView.smoothScrollToPosition(mPosition);
         }
-        long defaultId = moviesCursorAdaptor.getItemId(0);
-        Log.i(TAG, "default Id is " + defaultId);
-
-        if(data.moveToFirst()){
+        // perform click on first item to show its details by default
+        if(getActivity().getSupportFragmentManager().findFragmentByTag(Constants.DETAILFRAGMENT_TAG) != null && data.moveToFirst()){
             new Handler().post(new Runnable() {
                 public void run() {
                     gridView.performItemClick(gridView.getAdapter().getView(0, null, null), 0, gridView.getAdapter().getItemId(0));

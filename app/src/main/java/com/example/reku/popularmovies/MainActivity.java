@@ -1,5 +1,6 @@
 package com.example.reku.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -20,7 +21,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements HomeFragment.Callback{
     private static final String TAG = MainActivity.class.getSimpleName();
     private int mLastPreference;
-    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+
     private boolean mTwoPane;
 
 
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Call
             mTwoPane = true;
             if(savedInstanceState == null){
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.movie_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                        .replace(R.id.movie_detail_container, new DetailActivityFragment(), Constants.DETAILFRAGMENT_TAG)
                         .commit();
             }
         }else{
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Call
     @Override
     public void onItemSelected(Uri movieUri) {
         Log.i(TAG,movieUri.toString());
-        DetailActivityFragment daf = (DetailActivityFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+        DetailActivityFragment daf = (DetailActivityFragment) getSupportFragmentManager().findFragmentByTag(Constants.DETAILFRAGMENT_TAG);
         if(daf != null){
             // If detail activity frag is available, we're in two-pane layout...
             Bundle args = new Bundle();
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Call
             DetailActivityFragment fragment = new DetailActivityFragment();
             fragment.setArguments(args);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .replace(R.id.movie_detail_container, fragment, Constants.DETAILFRAGMENT_TAG)
                     .commit();
 
         }else{
