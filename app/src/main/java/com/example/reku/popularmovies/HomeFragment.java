@@ -1,8 +1,11 @@
 package com.example.reku.popularmovies;
 
-import android.content.Intent;
+import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -27,9 +30,38 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private MoviesCursorAdaptor moviesCursorAdaptor;
     private static final int CURSOR_LOADER_ID = 0;
+    private static final String SELECTED_KEY = "selectedKey";
+    Callback mCallback;
+    private int mPosition;
+    private GridView gridView;
+
     public HomeFragment() {
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity a;
+        if(context instanceof Activity){
+            a= (Activity) context;
+            // This makes sure that the container activity has implemented
+            // the callback interface. If not, it throws an exception
+            try{
+                mCallback = (Callback) a;
+            }catch (ClassCastException e){
+                throw new ClassCastException(a.toString()
+                        + " must implement Callback interface");
+
+            }
+
+        }
+    }
+
+
+    public interface Callback{
+        void onItemSelected(Uri movieUri);
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main_fragment, menu);
@@ -71,22 +103,28 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         moviesCursorAdaptor = new MoviesCursorAdaptor(getActivity(), null, 0, CURSOR_LOADER_ID);
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
+        gridView = (GridView) rootView.findViewById(R.id.gridView_tiles);
         gridView.setColumnWidth(Constants.POSTER_WIDTH);
         gridView.setAdapter(moviesCursorAdaptor);
+        gridView.setEmptyView(rootView.findViewById(R.id.imageView_empty_grid));
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
-                if (cursor != null) {
+                if (cursor != null && cursor.moveToPosition(position)) {
                     Long idLong = cursor.getLong(cursor.getColumnIndex("_id"));
                     Log.i(TAG, idLong.toString());
-                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                    detailIntent.setData(MovieContract.MovieEntry.buildMovieUri(idLong));
-                    startActivity(detailIntent);
+
+                    Uri destUri = MovieContract.MovieEntry.buildMovieUri(idLong);
+                    mCallback.onItemSelected(destUri);
                 }
+                mPosition = position;
             }
         });
+        if(savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)){
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
         return rootView;
     }
 
@@ -102,6 +140,15 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onResume() {
         super.onResume();
         getActivity().invalidateOptionsMenu();
+        onPreferenceChanged();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if(mPosition != GridView.INVALID_POSITION){
+            outState.putInt(SELECTED_KEY, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     void onPreferenceChanged(){
@@ -135,6 +182,20 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.i(TAG, "cursor load finished");
         moviesCursorAdaptor.swapCursor(data);
+        if (mPosition != GridView.INVALID_POSITION){
+            gridView.smoothScrollToPosition(mPosition);
+        }
+        long defaultId = moviesCursorAdaptor.getItemId(0);
+        Log.i(TAG, "default Id is " + defaultId);
+
+        if(data.moveToFirst()){
+            new Handler().post(new Runnable() {
+                public void run() {
+                    gridView.performItemClick(gridView.getAdapter().getView(0, null, null), 0, gridView.getAdapter().getItemId(0));
+                }
+            });
+        }
+
     }
 
     @Override

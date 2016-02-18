@@ -15,6 +15,17 @@ public class DetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         fab = (FloatingActionButton)findViewById(R.id.detail_fab);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(savedInstanceState == null){
+            Bundle arguments = new Bundle();
+            arguments.putParcelable(Constants.DETAILFRAG_KEY, getIntent().getData());
+
+            DetailActivityFragment fragment = new DetailActivityFragment();
+            fragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment)
+                    .commit();
+        }
     }
 
 }

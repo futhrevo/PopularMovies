@@ -37,6 +37,7 @@ public class MoviesCursorAdaptor extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
         Movie movie = new Movie(cursor);
+        viewHolder.posterView.setContentDescription(movie.original_title);
         Picasso.with(mContext).load(movie.getPoster_path()).placeholder(R.mipmap.ic_launcher).error(R.drawable.ic_cloud_off_black_36px).into(viewHolder.posterView);
     }
 

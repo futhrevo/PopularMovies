@@ -1,10 +1,12 @@
 package com.example.reku.popularmovies;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.view.MenuItem;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
@@ -62,6 +64,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // closing the settings screen
         finish();
         return super.onOptionsItemSelected(item);
+    }
+
+    @Nullable
+    @Override
+    public Intent getParentActivityIntent() {
+        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     }
 
 

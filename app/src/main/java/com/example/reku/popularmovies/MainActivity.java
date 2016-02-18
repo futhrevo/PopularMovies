@@ -2,13 +2,12 @@ package com.example.reku.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -17,9 +16,13 @@ import com.facebook.stetho.Stetho;
 
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements HomeFragment.Callback{
+    private static final String TAG = MainActivity.class.getSimpleName();
     private int mLastPreference;
-    private final String HOMEFRAGMENT_TAG = "HMTAG";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean mTwoPane;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +31,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(savedInstanceState == null){
-            pushFragments(new HomeFragment(), false, HOMEFRAGMENT_TAG);
-        }
         updateTiles();
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
@@ -40,6 +40,17 @@ public class MainActivity extends AppCompatActivity {
                                 Stetho.defaultInspectorModulesProvider(this))
                         .build());
 
+        if(findViewById(R.id.movie_detail_container) != null){
+            Log.i(TAG, "Two Pane Layout");
+            mTwoPane = true;
+            if(savedInstanceState == null){
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        }else{
+            mTwoPane = false;
+        }
     }
 
     @Override
@@ -65,32 +76,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        int pref = Utility.getPrefSelected(this);
-        if(pref != mLastPreference){
-            HomeFragment hm = (HomeFragment) getSupportFragmentManager().findFragmentByTag(HOMEFRAGMENT_TAG);
-            if(hm != null){
-                hm.onPreferenceChanged();
-            }
-            mLastPreference = pref;
-        }
-    }
-
-    public void pushFragments(Fragment fragment, boolean shouldAdd, String tag) {
-        FragmentManager manager = getSupportFragmentManager();//Use this line for FragmentManager , if you are in Activity
-        //FragmentManager manager = getActivity().getSupportFragmentManager();//Use this line for FragmentManager , if you are in Fragment
-        FragmentTransaction ft = manager.beginTransaction();
-
-        manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);//Uncomment this line if you don't want to maintain Fragment Backsack
-        ft.replace(R.id.content_main, fragment, tag);
-        if (shouldAdd) {
-            ft.addToBackStack(tag); //add fragment in backstack
-        }
-        ft.commit();
-    }
-
     private  void updateTiles(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         long bestBefore = settings.getLong(Constants.VALID_TILL, 0L);
@@ -104,6 +89,30 @@ public class MainActivity extends AppCompatActivity {
 
         } else{
             return;
+        }
+    }
+
+    @Override
+    public void onItemSelected(Uri movieUri) {
+        Log.i(TAG,movieUri.toString());
+        DetailActivityFragment daf = (DetailActivityFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+        if(daf != null){
+            // If detail activity frag is available, we're in two-pane layout...
+            Bundle args = new Bundle();
+            args.putParcelable(Constants.DETAILFRAG_KEY, movieUri);
+
+            DetailActivityFragment fragment = new DetailActivityFragment();
+            fragment.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+
+        }else{
+            // Otherwise, we're in the one-pane layout...
+
+            Intent detailIntent = new Intent(getApplicationContext(), DetailActivity.class);
+            detailIntent.setData(movieUri);
+            startActivity(detailIntent);
         }
     }
 }

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:id="@+id/movie_detail_container"
     tools:context="com.example.reku.popularmovies.DetailActivityFragment">
 
         <RelativeLayout
@@ -30,13 +31,14 @@
                 android:id="@+id/imageView_poster_detail"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_margin="@dimen/movie_detail_padding" />
+                android:layout_margin="@dimen/movie_detail_padding"
+                android:background="@drawable/ic_airline_seat_flat_angled_black_24dp" />
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:text="Large Text"
+                android:text="Sleeping Beauty \n\n1959"
                 android:id="@+id/textView_release_year"
                 android:layout_alignTop="@+id/imageView_poster_detail"
                 android:layout_toRightOf="@+id/imageView_poster_detail"
@@ -62,7 +64,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:text="Large Text"
+                android:text="6.7 / 10"
                 android:id="@+id/textView_vote_average"
                 android:layout_below="@+id/textView_runtime"
                 android:layout_toRightOf="@+id/imageView_poster_detail"
@@ -73,7 +75,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New Text"
+                android:text="A beautiful princess born in a faraway kingdom is destined by a terrible curse to prick her finger on the spindle of a spinning wheel and fall into a deep sleep that can only be awakened by true love&apos;s first kiss. Determined to protect her, her parents ask three fairies to raise her in hiding. But the evil Maleficent is just as determined to seal the princess&apos;s fate."
                 android:id="@+id/textView_overview"
                 android:layout_below="@+id/imageView_poster_detail"
                 android:layout_alignLeft="@+id/imageView_poster_detail"

@@ -37,7 +37,7 @@ import butterknife.ButterKnife;
 public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG =  DetailActivityFragment.class.getSimpleName();
     private Uri mUri;
-
+    private String title = "Movie";
     private ShareActionProvider mShareActionProvider;
 
     @Bind(R.id.imageView_poster_detail) ImageView imageView_poster_detail;
@@ -48,6 +48,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Bind(R.id.listView_trailers) LinearListView listView_trailers;
     @Bind(R.id.linearlist) LinearListView linearListView;
     @Bind(R.id.progressBar) ProgressBar progressBar;
+    @Bind(R.id.textView_empty_trailer_list) TextView textView_empty_trailer_list;
+    @Bind(R.id.textView_empty_list_item) TextView textView_empty_list_item;
 
     private static final int DETAIL_LOADER = 0;
     private static final String[] DETAIL_COLUMNS =  {
@@ -78,7 +80,6 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
         //        //add fab functionality
         myFab = (FloatingActionButton) getActivity().findViewById(R.id.detail_fab);
@@ -86,16 +87,16 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onClick(View v) {
                 ContentValues cv = new ContentValues();
-                if(myFab.isSelected()){
+                if (myFab.isSelected()) {
                     cv.put(MovieEntry.COLUMN_FAVORITE, false);
                     Log.i(TAG, " fab clicked");
-                }else {
+                } else {
                     cv.put(MovieEntry.COLUMN_FAVORITE, true);
                 }
 //                myFab.setSelected(!myFab.isSelected());
 //                myFab.setImageResource(myFab.isSelected() ? R.drawable.ic_favorite_black_24dp : R.drawable.ic_favorite_border_black_24dp);
-                if(cv.size() > 0){
-                    int updated = getContext().getContentResolver().update(mUri,cv,null,null);
+                if (cv.size() > 0) {
+                    int updated = getContext().getContentResolver().update(mUri, cv, null, null);
                     getLoaderManager().restartLoader(DETAIL_LOADER, null, DetailActivityFragment.this);
                 }
 
@@ -111,34 +112,12 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         final View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, rootView);
 
-        Intent intent = getActivity().getIntent();
-        if(intent != null){
-            mUri = intent.getData();
-            long movieId = ContentUris.parseId(mUri);
-            // fetch meta data from async task
-            new TmdbApiTask(getActivity(), textView_runtime).execute(String.valueOf(movieId));
-
-            //fetch trailer list
-            new TmdbApiTask(getActivity(), listView_trailers, Constants.FETCH_VIDEOS, new TmdbApiTask.AsyncResponse() {
-                @Override
-                public void processFinish(String result) {
-                    listView_trailers.setEmptyView(rootView.findViewById(R.id.textView_empty_trailer_list));
-                    if(mShareActionProvider != null){
-                        Intent shareIntent =  createShareVideoIntent(result);
-                        mShareActionProvider.setShareIntent(shareIntent);
-                    }
-                }
-            }).execute(String.valueOf(movieId));
-
-            //fetch reviews list
-            new TmdbApiTask(getActivity(), linearListView, Constants.FETCH_REVIEWS, new TmdbApiTask.AsyncResponse() {
-                @Override
-                public void processFinish(String str) {
-                    progressBar.setVisibility(View.GONE);
-                    linearListView.setEmptyView(rootView.findViewById(R.id.textView_empty_list_item));
-                }
-            }).execute(String.valueOf(movieId));
+        Bundle arguments = getArguments();
+        if(arguments != null){
+            mUri = arguments.getParcelable(Constants.DETAILFRAG_KEY);
+            Log.i(TAG, mUri.toString());
         }
+        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
         return rootView;
     }
 
@@ -156,7 +135,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         // Get the provider and hold onto it to set/change the share intent.
         mShareActionProvider =
                 (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-        mShareActionProvider.setShareIntent(createShareVideoIntent(null));
+//        mShareActionProvider.setShareIntent(createShareVideoIntent(null));
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -165,16 +144,21 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareIntent.setType("text/plain");
         String link;
-        if(key != null){
-           link =  "Checkout " + getActivity().getTitle() + " movie trailer @ " + "http://www.youtube.com/watch?v="+ key +" ";
-        } else{
-            link =  "Checkout " + getActivity().getTitle() + " movie ";
+        try {
+            if(key != null){
+                link =  "Checkout " + title + " movie trailer @ " + "http://www.youtube.com/watch?v="+ key +" ";
+            } else{
+                link =  "Checkout " + title + " movie ";
+            }
+            shareIntent.putExtra(Intent.EXTRA_TEXT,
+                    link + Constants.MOVIE_SHARE_HASHTAG);
+            return shareIntent;
+        }catch (NullPointerException e){
+            Log.e(TAG, "Unable to read title from activity");
         }
-        shareIntent.putExtra(Intent.EXTRA_TEXT,
-                link + Constants.MOVIE_SHARE_HASHTAG);
-        return shareIntent;
-    }
 
+        return null;
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -194,8 +178,38 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
-            String title = data.getString(COL_MOVIE_TITLE);
-            getActivity().setTitle(title);
+            long movieId = ContentUris.parseId(mUri);
+            title = data.getString(COL_MOVIE_TITLE);
+            // fetch meta data from async task
+            new TmdbApiTask(getActivity(), textView_runtime).execute(String.valueOf(movieId));
+
+            //fetch trailer list
+            new TmdbApiTask(getActivity(), listView_trailers, Constants.FETCH_VIDEOS, new TmdbApiTask.AsyncResponse() {
+                @Override
+                public void processFinish(String result) {
+                    listView_trailers.setEmptyView(textView_empty_trailer_list);
+                    if(mShareActionProvider != null){
+                        Intent shareIntent =  createShareVideoIntent(result);
+                        mShareActionProvider.setShareIntent(shareIntent);
+                    }
+                }
+            }).execute(String.valueOf(movieId));
+
+            //fetch reviews list
+            new TmdbApiTask(getActivity(), linearListView, Constants.FETCH_REVIEWS, new TmdbApiTask.AsyncResponse() {
+                @Override
+                public void processFinish(String str) {
+                    progressBar.setVisibility(View.GONE);
+                    linearListView.setEmptyView(textView_empty_list_item);
+                }
+            }).execute(String.valueOf(movieId));
+
+
+            if(getActivity().findViewById(R.id.gridView_tiles) == null){
+                //single pane
+                getActivity().setTitle(title);
+            }
+
             String year = data.getString(COL_MOVIE_DATE);
 
             textView_release_year.setText(title + " \n\n" + Utility.getYear(year));
@@ -208,6 +222,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
             String poster = data.getString(COL_MOVIE_POSTER);
 
+            imageView_poster_detail.setContentDescription(title);
         Picasso.with(getContext())
                 .load(Utility.getPoster_path(Constants.DEFAULT_POSTER_WIDTH, poster))
                 .into(imageView_poster_detail);

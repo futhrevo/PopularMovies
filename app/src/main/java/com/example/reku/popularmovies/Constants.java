@@ -31,4 +31,6 @@ public final class Constants {
     public static final int PREF_HIGH_RATED = 0;
     public static final int PREF_MOST_POPULAR = 1;
     public static final int PREF_FAVORITE = 2;
+
+    public static final String DETAILFRAG_KEY = "mUri";
 }
