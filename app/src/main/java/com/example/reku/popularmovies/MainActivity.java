@@ -3,6 +3,7 @@ package com.example.reku.popularmovies;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -77,19 +78,25 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Call
     }
 
     private  void updateTiles(){
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        long bestBefore = settings.getLong(Constants.VALID_TILL, 0L);
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final long bestBefore = settings.getLong(Constants.VALID_TILL, 0L);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (new Date().after(new Date(bestBefore))) {
+                    if (Utility.hasActiveInternetConnection(getApplicationContext())) {
+                        getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
+                        new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_HIGH_RATED));
+                        new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_MOST_POPULAR));
+                        // refresh data every day
+                        settings.edit().putLong(Constants.VALID_TILL, new Date().getTime() + 86400000L).apply();
+                    }
+                } else {
+                    return;
+                }
+            }
+        });
 
-        if(new Date().after(new Date(bestBefore))){
-            getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
-            new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_HIGH_RATED));
-            new TmdbApiTask(getApplicationContext()).execute(String.valueOf(Constants.PREF_MOST_POPULAR));
-            // refresh data every day
-            settings.edit().putLong(Constants.VALID_TILL, new Date().getTime() + 86400000L).apply();
-
-        } else{
-            return;
-        }
     }
 
     @Override
